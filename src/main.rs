@@ -51,7 +51,7 @@ fn ask_confirmation(file: &Path) -> bool {
 fn start_clean(options: &CleanOptions, entry: &Path) {
     if entry.exists() {
         if entry.is_dir() {
-            if options.recursive {
+            if options.recursive || entry.as_str().unwrap() == "." {
                 match fs::readdir(entry) {
                     Ok(res) => {
                         if options.verbose {

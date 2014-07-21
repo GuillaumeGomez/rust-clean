@@ -112,7 +112,7 @@ fn main() {
 
     args.remove(0);
     for tmp in args.iter() {
-        if tmp.clone().into_bytes().get(0) == &('-' as u8) {
+        if tmp.clone().into_bytes()[0] == '-' as u8 {
             let mut tmp_arg = String::from_str(tmp.as_slice());
 
             tmp_arg.shift_char();

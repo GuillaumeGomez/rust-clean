@@ -1,7 +1,7 @@
 rust-clean
 ==========
 
-A little tmp file cleaner in rust. It removes all the ~ files (file.txt~ for example).
+A little temporary emacs file cleaner in rust. It removes all the ~ files (file.txt~ for example).
 
 ##Installation
 

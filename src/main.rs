@@ -23,6 +23,7 @@
 use std::io::fs;
 use std::os;
 use std::path::posix::Path;
+use std::io::fs::PathExtensions;
 
 struct CleanOptions {
     recursive: bool,
@@ -115,7 +116,7 @@ fn main() {
         if tmp.clone().into_bytes()[0] == '-' as u8 {
             let mut tmp_arg = String::from_str(tmp.as_slice());
 
-            tmp_arg.shift_char();
+            tmp_arg.remove(0);
             if tmp_arg.len() > 0 {
                 for character in tmp_arg.into_bytes().iter() {
                     match *character as char {

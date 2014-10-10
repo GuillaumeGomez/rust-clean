@@ -1,0 +1,8 @@
+[package]
+
+name = "clean"
+version = "1.0.0"
+authors = ["Guillaume Gomez <guillaume1.gomez@gmail.com>"]
+
+[[bin]]
+name = "clean"

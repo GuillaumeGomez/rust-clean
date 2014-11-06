@@ -136,7 +136,7 @@ fn main() {
                             options.confirmation = true;
                         }
                         _ => {
-                            fail!("Unknown option: '{}', to have the options list, please launch with '-h' option\n", character);
+                            panic!("Unknown option: '{}', to have the options list, please launch with '-h' option\n", character);
                         }
                     }
                 }

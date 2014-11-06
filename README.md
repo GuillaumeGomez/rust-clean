@@ -1,4 +1,4 @@
-rust-clean
+rust-clean [![Build Status](https://api.travis-ci.org/GuillaumeGomez/rust-clean.png?branch=master)](https://travis-ci.org/GuillaumeGomez/rust-clean)
 ==========
 
 A little temporary emacs file cleaner in rust. It removes all the ~ files (file.txt~ for example). Not the #files#.
@@ -9,6 +9,12 @@ To build it, please use :
 
 ```Shell
 > make
+```
+
+Since it supports Cargo, you can also build it this way :
+
+```Shell
+> cargo build
 ```
 
 If you want to directly install this software in your environment, please use :

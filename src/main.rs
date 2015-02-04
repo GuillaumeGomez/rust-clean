@@ -20,12 +20,12 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#![allow(unstable)]
+#![feature(io, core, path, os, collections)]
 
-use std::io::fs;
+use std::old_io::fs;
 use std::os;
 use std::path::posix::Path;
-use std::io::fs::PathExtensions;
+use std::old_io::fs::PathExtensions;
 
 struct CleanOptions {
     recursive: bool,
@@ -36,7 +36,7 @@ struct CleanOptions {
 fn ask_confirmation(file: &Path) -> bool {
     loop {
         print!("clean: remove \x1b[37;1m'{}'\x1b[0m (y/n) ? ", file.as_str().unwrap());
-        match std::io::stdio::stdin().read_line() {
+        match std::old_io::stdio::stdin().read_line() {
             Ok(s) => {
                 let tmp_s = s.replace("\r\n", "").replace("\n", "");
 

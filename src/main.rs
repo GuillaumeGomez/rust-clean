@@ -20,12 +20,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#![feature(io, core, path, os, collections)]
+#![feature(core, path, os, collections, fs, old_io, env)]
 
-use std::old_io::fs;
-use std::os;
-use std::path::posix::Path;
-use std::old_io::fs::PathExtensions;
+use std::fs::{self, PathExt};
+use std::path::Path;
 
 struct CleanOptions {
     recursive: bool,
@@ -35,7 +33,7 @@ struct CleanOptions {
 
 fn ask_confirmation(file: &Path) -> bool {
     loop {
-        print!("clean: remove \x1b[37;1m'{}'\x1b[0m (y/n) ? ", file.as_str().unwrap());
+        print!("clean: remove \x1b[37;1m'{}'\x1b[0m (y/n) ? ", file.to_str().unwrap());
         match std::old_io::stdio::stdin().read_line() {
             Ok(s) => {
                 let tmp_s = s.replace("\r\n", "").replace("\n", "");
@@ -54,49 +52,55 @@ fn ask_confirmation(file: &Path) -> bool {
 fn start_clean(options: &CleanOptions, entry: &Path) {
     if entry.exists() {
         if entry.is_dir() {
-            if options.recursive || entry.as_str().unwrap() == "." {
-                match fs::readdir(entry) {
+            if options.recursive || entry.to_str().unwrap() == "." {
+                match fs::read_dir(entry) {
                     Ok(res) => {
                         if options.verbose {
-                            println!("\x1b[36;1m-> Entering {}\x1b[0m", entry.as_str().unwrap());
+                            println!("\x1b[36;1m-> Entering {}\x1b[0m", entry.to_str().unwrap());
                         }
-                        for tmp in res.iter() {
-                            start_clean(options, tmp);
+                        for tmp in res {
+                            match tmp {
+                                Ok(current) => start_clean(options, &current.path()),
+                                Err(e) => println!("Error: {:?}", e)
+                            };
                         }
                         if options.verbose {
-                            println!("\x1b[34;1m<- Leaving {}\x1b[0m", entry.as_str().unwrap());
+                            println!("\x1b[34;1m<- Leaving {}\x1b[0m", entry.to_str().unwrap());
                         }
                     }
                     Err(e) => {
-                        println!("\x1b[31;1mProblem with this directory: {} -> {}\x1b[0m", entry.as_str().unwrap(), e);
+                        println!("\x1b[31;1mProblem with this directory: {} -> {}\x1b[0m", entry.to_str().unwrap(), e);
                     }
                 }
             }
         } else {
-            match entry.filename() {
+            match entry.file_name() {
                 Some(s) => {
-                    if s.last().unwrap() == &('~' as u8) {
-                        if !options.confirmation || ask_confirmation(&Path::new(s)) {
-                            match fs::unlink(entry) {
-                                Ok(_) => {
-                                    if options.verbose {
-                                        println!("\x1b[32;1m{} deleted\x1b[0m", entry.as_str().unwrap());
+                    match s.to_str() {
+                        Some(ss) => if ss.ends_with("~") {
+                            if !options.confirmation || ask_confirmation(&Path::new(s)) {
+                                match fs::remove_file(entry) {
+                                    Ok(_) => {
+                                        if options.verbose {
+                                            println!("\x1b[32;1m{} deleted\x1b[0m", entry.to_str().unwrap());
+                                        }
+                                    }
+                                    Err(e) => {
+                                        println!("\x1b[31;1mProblem with this file: {} -> {}\x1b[0m", entry.to_str().unwrap(), e);
                                     }
                                 }
-                                Err(e) => {
-                                    println!("\x1b[31;1mProblem with this file: {} -> {}\x1b[0m", entry.as_str().unwrap(), e);
-                                }
                             }
-                        }
+                        },
+                        _ => {}
                     }
                 }
                 None => {
-                    println!("\x1b[31;1mProblem with this file: {}\x1b[0m", entry.as_str().unwrap());
+                    println!("\x1b[31;1mProblem with this file: {}\x1b[0m", entry.to_str().unwrap());
                 }
             }
         }
     } else {
-        println!("\x1b[31;1mProblem with this entry: {}\x1b[0m", entry.as_str().unwrap());
+        println!("\x1b[31;1mProblem with this entry: {}\x1b[0m", entry.to_str().unwrap());
     }
 }
 
@@ -109,7 +113,11 @@ fn print_help() {
 }
 
 fn main() {
-    let mut args = os::args().clone();
+    let mut args = Vec::new();
+
+    for argument in std::env::args() {
+        args.push(argument);
+    }
     let mut options = CleanOptions{recursive: false, verbose: false, confirmation: false};
     let mut files = Vec::new();
 
@@ -148,7 +156,7 @@ fn main() {
         }
     }
     if files.len() == 0 {
-        files.push(Path::new(String::from_str(".").as_slice()));
+        files.push(Path::new("."));
     }
     if options.verbose {
         println!("\x1b[33;1m=== VERBOSE MODE ===\x1b[0m");

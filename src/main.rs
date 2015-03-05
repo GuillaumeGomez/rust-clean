@@ -20,7 +20,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#![feature(core, path, os, collections, fs, old_io, env)]
+#![feature(core, path, os, collections, fs, old_io)]
 
 use std::fs::{self, PathExt};
 use std::path::Path;

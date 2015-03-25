@@ -20,7 +20,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#![feature(core, path, os, collections, fs, old_io)]
+#![feature(core, collections, old_io, path_ext)]
 
 use std::fs::{self, PathExt};
 use std::path::Path;
@@ -38,9 +38,9 @@ fn ask_confirmation(file: &Path) -> bool {
             Ok(s) => {
                 let tmp_s = s.replace("\r\n", "").replace("\n", "");
 
-                if tmp_s.as_slice() == "y" || tmp_s.as_slice() == "yes" {
+                if tmp_s == "y" || tmp_s == "yes" {
                     return true;
-                } else if tmp_s.as_slice() == "n" || tmp_s.as_slice() == "no" {
+                } else if tmp_s == "n" || tmp_s == "no" {
                     return false;
                 }
             }
@@ -124,7 +124,7 @@ fn main() {
     args.remove(0);
     for tmp in args.iter() {
         if tmp.clone().into_bytes()[0] == '-' as u8 {
-            let mut tmp_arg = String::from_str(tmp.as_slice());
+            let mut tmp_arg = String::from_str(tmp);
 
             tmp_arg.remove(0);
             if tmp_arg.len() > 0 {
@@ -151,7 +151,7 @@ fn main() {
                     }
                 }
             } else {
-                files.push(Path::new(tmp.as_slice()));
+                files.push(Path::new(tmp));
             }
         }
     }

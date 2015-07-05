@@ -20,22 +20,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#![feature(core, collections, old_io, path_ext)]
-
 use std::fs::{self, PathExt};
 use std::path::Path;
+use std::str::FromStr;
 
 struct CleanOptions {
     recursive: bool,
     verbose: bool,
-    confirmation: bool
+    confirmation: bool,
+    level: u32
 }
 
 fn ask_confirmation(file: &Path) -> bool {
     loop {
         print!("clean: remove \x1b[37;1m'{}'\x1b[0m (y/n) ? ", file.to_str().unwrap());
-        match std::old_io::stdio::stdin().read_line() {
-            Ok(s) => {
+        let mut s = String::new();
+
+        match std::io::stdin().read_line(&mut s) {
+            Ok(_) => {
                 let tmp_s = s.replace("\r\n", "").replace("\n", "");
 
                 if tmp_s == "y" || tmp_s == "yes" {
@@ -49,10 +51,13 @@ fn ask_confirmation(file: &Path) -> bool {
     }
 }
 
-fn start_clean(options: &CleanOptions, entry: &Path) {
-    if entry.exists() {
-        if entry.is_dir() {
-            if options.recursive || entry.to_str().unwrap() == "." {
+fn start_clean(options: &CleanOptions, entry: &Path, level: u32) {
+    let m = ::std::fs::metadata(&entry).unwrap();
+
+    if m.is_file() || m.is_dir() {
+        if m.is_dir() {
+            if (options.recursive || entry.to_str().unwrap() == ".") &&
+                (options.level == 0 || level <= options.level) {
                 match fs::read_dir(entry) {
                     Ok(res) => {
                         if options.verbose {
@@ -60,7 +65,9 @@ fn start_clean(options: &CleanOptions, entry: &Path) {
                         }
                         for tmp in res {
                             match tmp {
-                                Ok(current) => start_clean(options, &current.path()),
+                                Ok(current) => {
+                                    start_clean(options, &current.path(), level + 1);
+                                },
                                 Err(e) => println!("Error: {:?}", e)
                             };
                         }
@@ -106,9 +113,10 @@ fn start_clean(options: &CleanOptions, entry: &Path) {
 
 fn print_help() {
     println!("./clean [options] [files | dirs]");
-    println!("    -r : recursive mode");
-    println!("    -v : verbose mode");
-    println!("    -i : prompt before every removal");
+    println!("    -r          : recursive mode");
+    println!("    -v          : verbose mode");
+    println!("    -i          : prompt before every removal");
+    println!("    -l=[number] : Add a level for recursive mode");
     println!("--help : print this help");
 }
 
@@ -118,20 +126,20 @@ fn main() {
     for argument in std::env::args() {
         args.push(argument);
     }
-    let mut options = CleanOptions{recursive: false, verbose: false, confirmation: false};
+    let mut options = CleanOptions{recursive: false, verbose: false, confirmation: false, level: 0};
     let mut files = Vec::new();
 
     args.remove(0);
     for tmp in args.iter() {
         if tmp.clone().into_bytes()[0] == '-' as u8 {
-            let mut tmp_arg = String::from_str(tmp);
+            let mut tmp_arg = tmp.to_owned();
 
             tmp_arg.remove(0);
             if tmp_arg.len() > 0 {
                 for character in tmp_arg.into_bytes().iter() {
                     match *character as char {
                         '-' => {
-                            if tmp.as_slice() == "--help" {
+                            if &*tmp == "--help" {
                                 print_help();
                                 return;
                             }
@@ -145,14 +153,33 @@ fn main() {
                         'i' => {
                             options.confirmation = true;
                         }
+                        'l' => {
+                            if tmp.len() < 4 || &tmp[0..3] != "-l=" {
+                                println!("The \"-l\" option has to be used like this:");
+                                println!("clean -r -l=2");
+                                return;
+                            }
+                            options.level = match u32::from_str(&tmp[3..]) {
+                                Ok(u) => u,
+                                Err(_) => {
+                                    println!("Please enter a valid number!");
+                                    return;
+                                }
+                            };
+                            println!("Level is set to {}", options.level);
+                            break;
+                        }
                         _ => {
-                            panic!("Unknown option: '{}', to have the options list, please launch with '-h' option\n", character);
+                            println!("Unknown option: '{}', to have the options list, please launch with '-h' option", *character as char);
+                            return;
                         }
                     }
                 }
-            } else {
+            }/* else {
                 files.push(Path::new(tmp));
-            }
+            }*/
+        } else {
+            files.push(Path::new(tmp));
         }
     }
     if files.len() == 0 {
@@ -162,7 +189,8 @@ fn main() {
         println!("\x1b[33;1m=== VERBOSE MODE ===\x1b[0m");
     }
     for tmp in files.iter() {
-        start_clean(&options, tmp);
+        println!("reading : {:?}", tmp);
+        start_clean(&options, tmp, 0);
     }
     if options.verbose {
         println!("\x1b[33;1mEnd of execution\x1b[0m");

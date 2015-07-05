@@ -27,9 +27,10 @@ If you want to directly install this software in your environment, please use :
 
 For the moment, here are the available options :
 
- * -r : recursive mode
- * -v : verbose mode
- * -i : prompt before every removal
+ * -r          : recursive mode
+ * -v          : verbose mode
+ * -i          : prompt before every removal
+ * -l=[number] : Add a level for recursive mode
  * --help : print this help
 
 
@@ -41,6 +42,6 @@ For the moment, here are the available options :
 
 ##License
 
-    Copyright (c) 2014 Guillaume Gomez
+    Copyright (c) 2014-2015 Guillaume Gomez
     
     This software is provided under the Zlib/png license.

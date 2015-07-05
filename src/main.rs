@@ -189,7 +189,6 @@ fn main() {
         println!("\x1b[33;1m=== VERBOSE MODE ===\x1b[0m");
     }
     for tmp in files.iter() {
-        println!("reading : {:?}", tmp);
         start_clean(&options, tmp, 0);
     }
     if options.verbose {

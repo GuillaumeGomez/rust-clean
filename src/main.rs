@@ -20,7 +20,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-use std::fs::{self, PathExt};
+use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 

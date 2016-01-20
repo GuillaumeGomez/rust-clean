@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = ["Guillaume Gomez <guillaume1.gomez@gmail.com>"]
 
 description = "A temporary emacs file cleaner"
-license = "Apache 2.0"
+license = "Apache-2.0"
 homepage = "https://github.com/GuillaumeGomez/rust-clean"
 documentation = "https://github.com/GuillaumeGomez/rust-clean"
 
